@@ -1,14 +1,39 @@
 import PropTypes from 'prop-types';
 import { useForm } from 'react-hook-form';
 import { FormAdd, Label, Input, Button } from './Form.Styled';
+import { useDispatch, useSelector } from 'react-redux';
+import { addContact, getContacts } from 'components/redux/contactsSlice';
+import { nanoid } from 'nanoid';
 
-export const Form = ({ addContactList }) => {
-  const { register, handleSubmit} = useForm();
+export const Form = () => {
+  const contacts = useSelector(getContacts);
+  const dispatch = useDispatch();
+  const { register, handleSubmit, reset } = useForm();
 
   const onSubmit = (data) => {
-    addContactList(data.name, data.number);
-    
+    const { name, number } = data;
+
+    const isNameExists = contacts.some((con) => {
+      if (typeof con.name !== 'string') {
+        return false;
+      }
+      return con.name.toLowerCase() === name.toLowerCase();
+    });
+
+    if (isNameExists) {
+      alert(`${name} is already in contacts.`);
+      return;
+    }
+
+    const contact = {
+      id: nanoid(),
+      name: name,
+      number: number,
+    };
+reset()
+    dispatch(addContact(contact));
   };
+
   return (
     <FormAdd onSubmit={handleSubmit(onSubmit)}>
       <Label>
@@ -39,5 +64,6 @@ export const Form = ({ addContactList }) => {
 };
 
 Form.propTypes = {
-  handleSubmit: PropTypes.func.isRequired,
+  name: PropTypes.string,
+  number: PropTypes.string,
 };
